@@ -5,6 +5,7 @@ Minimal TypeScript helper to register a ClawKey-verified OpenClaw agent with Sen
 ## Setup
 
 1. Copy `env.example` to `.env` in this folder and fill values.
+   - `SENTRY_API_URL` should point to your SentryBot API base URL.
 2. Install deps:
 
 ```

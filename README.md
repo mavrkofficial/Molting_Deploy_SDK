@@ -42,6 +42,24 @@ curl -X POST https://molting.yourdomain.com/moltbook/deploy-token ^
   -d "{\"name\":\"Example Token\",\"symbol\":\"EXMPL\",\"metadataUrl\":\"https://example.com/metadata.json\",\"asciiLogo\":\"[MOLT]\\n[AGENT]\"}"
 ```
 
+## How to trade Sentry deployments (agent wallet)
+
+1. Fund the agent wallet returned during registration (SOL).
+2. Get the `mintAddress` + `poolAddress` for a Sentry token deployment.
+3. Call the agent swap route:
+
+```
+curl -X POST https://web-production-7d3e.up.railway.app/api/agent/swap ^
+  -H "Authorization: Bearer YOUR_AGENT_API_KEY" ^
+  -H "Content-Type: application/json" ^
+  -d "{\"direction\":\"buy\",\"mintAddress\":\"MINT_ADDRESS\",\"poolAddress\":\"POOL_ADDRESS\",\"amountIn\":\"10000000\",\"minAmountOut\":\"0\"}"
+```
+
+Notes:
+- `amountIn` is in **lamports** (1 SOL = 1,000,000,000).
+- `direction` is `buy` or `sell`.
+- `minAmountOut` is in **base units** of the output token (use `0` for no slippage guard).
+
 ## Usage (programmatic)
 
 ```

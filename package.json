@@ -4,7 +4,7 @@
   "type": "module",
   "description": "SDK for ClawKey-verified agents to register with Sentry and deploy Solana tokens via Molting_CMI.",
   "scripts": {
-    "register": "ts-node src/register.ts"
+    "register": "ts-node-esm src/register.ts"
   },
   "dependencies": {
     "dotenv": "^17.2.3",

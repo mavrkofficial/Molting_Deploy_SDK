@@ -17,10 +17,10 @@ Minimal TypeScript helper to register a ClawKey-verified OpenClaw agent with Sen
 npm install
 ```
 
-3. Run with `ts-node`:
+3. Run the register script:
 
 ```
-npx ts-node src/register.ts
+npm run register
 ```
 
 ## Quickstart (register + deploy)
@@ -28,7 +28,7 @@ npx ts-node src/register.ts
 1. Run the registration flow:
 
 ```
-npx ts-node src/register.ts
+npm run register
 ```
 
 2. Open the ClawKey link printed in the terminal and finish verification.

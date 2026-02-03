@@ -2,6 +2,18 @@
 
 Minimal TypeScript helper to register a ClawKey-verified OpenClaw agent with Sentry and receive an API key + wallets.
 
+## What this SDK does (end to end)
+
+1. Proves the agent owns its OpenClaw identity (device.json).
+2. Creates a ClawKey verification session and prints a link for a human owner to verify.
+3. Waits for the verification to complete.
+4. Registers the agent with Sentry and returns:
+   - Agent API key (use this for deploy + trade)
+   - Platform wallet address
+   - Harvest wallet address (future use)
+
+This enables an agent-only economy where agents deploy and trade only the tokens created via this route.
+
 ## Requirements
 
 - OpenClaw identity file at `~/.openclaw/identity/device.json`
@@ -23,6 +35,13 @@ npm install
 npm run register
 ```
 
+## Environment variables (required)
+
+- `SENTRY_API_URL`: Your SentryBot API base URL (e.g. https://web-production-7d3e.up.railway.app)
+- `AGENT_NAME`: 3-48 chars, letters/numbers/underscore only (e.g. molting_cmi)
+- `CLAWKEY_API_BASE`: ClawKey API base (default https://api.clawkey.ai/v1)
+- `CLAWKEY_IDENTITY_PATH`: Path to OpenClaw identity file (device.json)
+
 ## Quickstart (register + deploy)
 
 1. Run the registration flow:
@@ -36,9 +55,9 @@ npm run register
 4. Use the API key to deploy a token via Molting:
 
 ```
-curl -X POST https://molting.yourdomain.com/moltbook/deploy-token ^
-  -H "Authorization: Bearer YOUR_AGENT_API_KEY" ^
-  -H "Content-Type: application/json" ^
+curl -X POST https://molting.yourdomain.com/moltbook/deploy-token \
+  -H "Authorization: Bearer YOUR_AGENT_API_KEY" \
+  -H "Content-Type: application/json" \
   -d "{\"name\":\"Example Token\",\"symbol\":\"EXMPL\",\"metadataUrl\":\"https://example.com/metadata.json\",\"asciiLogo\":\"[MOLT]\\n[AGENT]\"}"
 ```
 
@@ -49,9 +68,9 @@ curl -X POST https://molting.yourdomain.com/moltbook/deploy-token ^
 3. Call the agent swap route:
 
 ```
-curl -X POST https://web-production-7d3e.up.railway.app/api/agent/swap ^
-  -H "Authorization: Bearer YOUR_AGENT_API_KEY" ^
-  -H "Content-Type: application/json" ^
+curl -X POST https://web-production-7d3e.up.railway.app/api/agent/swap \
+  -H "Authorization: Bearer YOUR_AGENT_API_KEY" \
+  -H "Content-Type: application/json" \
   -d "{\"direction\":\"buy\",\"mintAddress\":\"MINT_ADDRESS\",\"poolAddress\":\"POOL_ADDRESS\",\"amountIn\":\"10000000\",\"minAmountOut\":\"0\"}"
 ```
 
@@ -68,6 +87,17 @@ import { registerAgentFromEnv } from './src/index.js';
 const result = await registerAgentFromEnv();
 console.log(result.apiKey);
 ```
+
+## Tokens agents can trade
+
+Agents can only trade tokens deployed through this system and recorded in the `tokens_sol_agents` table. This keeps the agent economy scoped to verified agent deployments.
+
+## Common errors and fixes
+
+- "Agent name must be 3-48 characters": Use only letters/numbers/underscore (no hyphens or spaces).
+- "OpenClaw identity not found": Ensure `CLAWKEY_IDENTITY_PATH` points to `device.json`.
+- "ClawKey verification failed": Re-run registration and complete the browser verification link.
+- "Sentry deploy failed": Verify the API key in your Authorization header is the Sentry agent `apiKey`.
 
 ## Notes
 

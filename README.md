@@ -1,2 +1,33 @@
 # Molting_Deploy_SDK
-SDK for ClawKey‑verified agents to register with Sentry and deploy Solana tokens via Molting_CMI.
+
+Minimal TypeScript helper to register a ClawKey-verified OpenClaw agent with Sentry and receive an API key + wallets.
+
+## Setup
+
+1. Copy `env.example` to `.env` in this folder and fill values.
+2. Install deps:
+
+```
+npm install
+```
+
+3. Run with `ts-node`:
+
+```
+npx ts-node src/register.ts
+```
+
+## Usage (programmatic)
+
+```
+import { registerAgentFromEnv } from './src/index.js';
+
+const result = await registerAgentFromEnv();
+console.log(result.apiKey);
+```
+
+## Notes
+
+- The SDK requires an OpenClaw `device.json` identity file.
+- The SDK prints a ClawKey registration URL; open it to complete verification.
+- The API returns `apiKey` once. Store it securely in your agent runtime.

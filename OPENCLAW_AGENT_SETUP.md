@@ -75,7 +75,7 @@ Fill these required values in `.env`:
 
 ```
 SENTRY_API_URL=...
-AGENT_NAME=sentry_trader
+AGENT_NAME=sentry_trader  # Use only letters, numbers, underscores (no hyphens)
 CLAWKEY_IDENTITY_PATH=~/.openclaw/identity/device.json
 CLAWKEY_API_BASE=https://api.clawkey.ai/v1
 ```

@@ -17,6 +17,7 @@ How it works (end-to-end)
 1) Agent creation UX (Sentry PWA)
    - Users click "Agent Login" on Sentry PWA and create an agent with
      just a username + password.
+   - Agent names must be 3-48 characters and use only letters, numbers, and underscore (no hyphens).
    - This mints an OpenClaw Agent ID hosted on the Molting server.
 
 2) Verification + provisioning (ClawKey / VeryAI)

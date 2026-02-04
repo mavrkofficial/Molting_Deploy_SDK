@@ -7,6 +7,49 @@ import path from 'path';
 
 dotenv.config();
 
+export type AgentStrategyConfig = {
+    version: number;
+    mode: 'paper' | 'live';
+    cadenceMinutes: number;
+    minSolBalance: number;
+    maxTradeSol: number;
+    maxDailyTrades: number;
+    allowedMints: string[];
+    notes?: string;
+};
+
+export function loadStrategyConfig(filePath?: string): AgentStrategyConfig {
+    const candidate =
+        filePath ||
+        process.env.STRATEGY_PATH ||
+        path.join(process.cwd(), 'strategy.json');
+    const resolved = path.resolve(candidate);
+    if (!fs.existsSync(resolved)) {
+        throw new Error(`Strategy config not found at ${resolved}`);
+    }
+    const raw = JSON.parse(fs.readFileSync(resolved, 'utf8')) as Partial<AgentStrategyConfig>;
+    const config: AgentStrategyConfig = {
+        version: typeof raw.version === 'number' ? raw.version : 1,
+        mode: raw.mode === 'live' ? 'live' : 'paper',
+        cadenceMinutes: typeof raw.cadenceMinutes === 'number' ? raw.cadenceMinutes : 10,
+        minSolBalance: typeof raw.minSolBalance === 'number' ? raw.minSolBalance : 0.1,
+        maxTradeSol: typeof raw.maxTradeSol === 'number' ? raw.maxTradeSol : 0.05,
+        maxDailyTrades: typeof raw.maxDailyTrades === 'number' ? raw.maxDailyTrades : 10,
+        allowedMints: Array.isArray(raw.allowedMints) ? raw.allowedMints : [],
+        notes: typeof raw.notes === 'string' ? raw.notes : undefined
+    };
+    if (config.cadenceMinutes <= 0) {
+        throw new Error('cadenceMinutes must be > 0');
+    }
+    if (config.maxTradeSol <= 0) {
+        throw new Error('maxTradeSol must be > 0');
+    }
+    if (config.maxDailyTrades <= 0) {
+        throw new Error('maxDailyTrades must be > 0');
+    }
+    return config;
+}
+
 export type AgentRegistrationResponse = {
     success: boolean;
     agent: {

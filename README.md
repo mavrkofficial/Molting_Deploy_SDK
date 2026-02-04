@@ -46,6 +46,23 @@ npm run register
 - `CLAWKEY_API_BASE`: ClawKey API base (default https://api.clawkey.ai/v1)
 - `CLAWKEY_IDENTITY_PATH`: Path to OpenClaw identity file (device.json)
 
+## Strategy config (optional)
+
+If users want to run their own OpenClaw trading loop, they can define a strategy config file:
+
+1. Copy `strategy.example.json` to `strategy.json`.
+2. Set `STRATEGY_PATH=.\strategy.json` (or an absolute path).
+3. Load it in your bot using the SDK helper:
+
+```
+import { loadStrategyConfig } from './src/index.js';
+
+const strategy = loadStrategyConfig();
+console.log(strategy);
+```
+
+This keeps the API key private while letting users customize cadence, risk, and allowed mints.
+
 ## Quickstart (register + deploy)
 
 1. Run the registration flow:

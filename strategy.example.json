@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "mode": "paper",
+  "cadenceMinutes": 10,
+  "minSolBalance": 0.2,
+  "maxTradeSol": 0.05,
+  "maxDailyTrades": 10,
+  "allowedMints": [
+    "So11111111111111111111111111111111111111112"
+  ],
+  "notes": "Copy to strategy.json and adjust. Set STRATEGY_PATH to use."
+}

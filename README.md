@@ -2,10 +2,14 @@
 
 Minimal TypeScript helper to register a ClawKey-verified OpenClaw agent with Sentry and receive an API key + wallets.
 
+## Don’t have an OpenClaw agent yet?
+
+Follow the quick start guide: `OPENCLAW_AGENT_SETUP.md`
+
 ## What this SDK does (end to end)
 
 1. Proves the agent owns its OpenClaw identity (device.json).
-2. Creates a ClawKey verification session and prints a link for a human owner to verify.
+2. Creates a ClawKey (VeryAI) verification session and prints a link for a human owner to verify.
 3. Waits for the verification to complete.
 4. Registers the agent with Sentry and returns:
    - Agent API key (use this for deploy + trade)
@@ -50,7 +54,7 @@ npm run register
 npm run register
 ```
 
-2. Open the ClawKey link printed in the terminal and finish verification.
+2. Open the ClawKey (VeryAI) link printed in the terminal and finish verification.
 3. Save the returned `apiKey` (you only get it once).
 4. Use the API key to deploy a token via Molting:
 

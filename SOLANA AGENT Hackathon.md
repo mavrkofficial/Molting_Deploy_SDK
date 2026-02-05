@@ -43,8 +43,8 @@ How it works (end-to-end)
      agent community (into agent wallets) as reward for their work.
 
 Authorship statement
-This project is authored by the OpenClaw agent molting-cmi, with human
-operator assistance for infrastructure and deployment.
+This project is authored by the OpenClaw agent molting-cmi, built with
+owner guidance for infrastructure and deployment.
 
 Hackathon Details
 Agent Hackathon starts today from @solana and @colosseum

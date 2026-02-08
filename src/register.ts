@@ -1,4 +1,4 @@
-import { registerAgentFromEnv } from './index.ts';
+import { registerAgentFromEnv } from './index.js';
 
 async function run() {
     const result = await registerAgentFromEnv();

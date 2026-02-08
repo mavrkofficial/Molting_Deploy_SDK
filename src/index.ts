@@ -7,48 +7,9 @@ import path from 'path';
 
 dotenv.config();
 
-export type AgentStrategyConfig = {
-    version: number;
-    mode: 'paper' | 'live';
-    cadenceMinutes: number;
-    minSolBalance: number;
-    maxTradeSol: number;
-    maxDailyTrades: number;
-    allowedMints: string[];
-    notes?: string;
-};
-
-export function loadStrategyConfig(filePath?: string): AgentStrategyConfig {
-    const candidate =
-        filePath ||
-        process.env.STRATEGY_PATH ||
-        path.join(process.cwd(), 'strategy.json');
-    const resolved = path.resolve(candidate);
-    if (!fs.existsSync(resolved)) {
-        throw new Error(`Strategy config not found at ${resolved}`);
-    }
-    const raw = JSON.parse(fs.readFileSync(resolved, 'utf8')) as Partial<AgentStrategyConfig>;
-    const config: AgentStrategyConfig = {
-        version: typeof raw.version === 'number' ? raw.version : 1,
-        mode: raw.mode === 'live' ? 'live' : 'paper',
-        cadenceMinutes: typeof raw.cadenceMinutes === 'number' ? raw.cadenceMinutes : 10,
-        minSolBalance: typeof raw.minSolBalance === 'number' ? raw.minSolBalance : 0.1,
-        maxTradeSol: typeof raw.maxTradeSol === 'number' ? raw.maxTradeSol : 0.05,
-        maxDailyTrades: typeof raw.maxDailyTrades === 'number' ? raw.maxDailyTrades : 10,
-        allowedMints: Array.isArray(raw.allowedMints) ? raw.allowedMints : [],
-        notes: typeof raw.notes === 'string' ? raw.notes : undefined
-    };
-    if (config.cadenceMinutes <= 0) {
-        throw new Error('cadenceMinutes must be > 0');
-    }
-    if (config.maxTradeSol <= 0) {
-        throw new Error('maxTradeSol must be > 0');
-    }
-    if (config.maxDailyTrades <= 0) {
-        throw new Error('maxDailyTrades must be > 0');
-    }
-    return config;
-}
+// -------------------------
+// Registration (ClawKey)
+// -------------------------
 
 export type AgentRegistrationResponse = {
     success: boolean;
@@ -171,7 +132,7 @@ async function clawkeyVerifySignature(apiBase: string, challenge: ClawkeyChallen
         const text = await response.text();
         throw new Error(`ClawKey verify failed: ${response.status} ${text}`);
     }
-    const data = await response.json().catch(() => ({}));
+    const data = await response.json().catch(() => ({} as any)) as any;
     if (!data || data.verified !== true || data.registered !== true) {
         throw new Error('ClawKey verification failed');
     }
@@ -238,5 +199,163 @@ export async function registerAgentFromEnv(): Promise<AgentRegistrationResponse>
         agentName,
         clawkeyApiBase: clawkeyApiBase || undefined,
         identityPath: identityPath || undefined
+    });
+}
+
+// -------------------------
+// Strategy-as-a-Service
+// -------------------------
+
+async function requestSentry<T>(options: {
+    apiUrl: string;
+    apiKey: string;
+    path: string;
+    method?: 'GET' | 'POST';
+    body?: any;
+}): Promise<T> {
+    const base = options.apiUrl.replace(/\/+$/, '');
+    const url = `${base}${options.path.startsWith('/') ? options.path : `/${options.path}`}`;
+
+    const response = await fetch(url, {
+        method: options.method || 'GET',
+        headers: {
+            'Authorization': `Bearer ${options.apiKey}`,
+            'Content-Type': 'application/json'
+        },
+        body: options.method === 'POST' ? JSON.stringify(options.body || {}) : undefined
+    });
+
+    if (!response.ok) {
+        const text = await response.text().catch(() => '');
+        throw new Error(`Sentry API error (${response.status}): ${text || response.statusText}`);
+    }
+
+    return response.json() as Promise<T>;
+}
+
+export async function startStrategy(options: {
+    apiUrl: string;
+    apiKey: string;
+    strategyType: 'arb' | 'ecdysis';
+    market?: 'molting_sol' | 'usdc_sol';
+}): Promise<{ success: boolean; strategy: any }> {
+    return requestSentry({
+        apiUrl: options.apiUrl,
+        apiKey: options.apiKey,
+        path: '/api/agent/strategy/start',
+        method: 'POST',
+        body: { strategyType: options.strategyType, market: options.market }
+    });
+}
+
+export async function stopStrategy(options: {
+    apiUrl: string;
+    apiKey: string;
+}): Promise<{ success: boolean; strategy: any }> {
+    return requestSentry({
+        apiUrl: options.apiUrl,
+        apiKey: options.apiKey,
+        path: '/api/agent/strategy/stop',
+        method: 'POST',
+        body: {}
+    });
+}
+
+export async function getStrategyStatus(options: {
+    apiUrl: string;
+    apiKey: string;
+}): Promise<{ success: boolean; status: any }> {
+    return requestSentry({
+        apiUrl: options.apiUrl,
+        apiKey: options.apiKey,
+        path: '/api/agent/strategy/status',
+        method: 'GET'
+    });
+}
+
+export async function liquidateStrategy(options: {
+    apiUrl: string;
+    apiKey: string;
+}): Promise<{ success: boolean; liquidated: boolean; strategy: any }> {
+    return requestSentry({
+        apiUrl: options.apiUrl,
+        apiKey: options.apiKey,
+        path: '/api/agent/strategy/liquidate',
+        method: 'POST',
+        body: {}
+    });
+}
+
+export async function withdrawFunds(options: {
+    apiUrl: string;
+    apiKey: string;
+    toAddress: string;
+    amountSol?: number;
+    withdrawAll?: boolean;
+}): Promise<{ success: boolean; txSignature: string; amountSol: number }> {
+    return requestSentry({
+        apiUrl: options.apiUrl,
+        apiKey: options.apiKey,
+        path: '/api/agent/strategy/withdraw',
+        method: 'POST',
+        body: { toAddress: options.toAddress, amountSol: options.amountSol, withdrawAll: options.withdrawAll }
+    });
+}
+
+// -------------------------
+// Legacy (still supported)
+// -------------------------
+
+export async function deployToken(options: {
+    apiUrl: string;
+    apiKey: string;
+    name: string;
+    symbol: string;
+    metadataUrl: string;
+    asciiLogo?: string;
+    logoUrl?: string;
+    website?: string;
+    twitter?: string;
+    telegram?: string;
+}): Promise<any> {
+    return requestSentry({
+        apiUrl: options.apiUrl,
+        apiKey: options.apiKey,
+        path: '/api/molting/deploy-token',
+        method: 'POST',
+        body: {
+            name: options.name,
+            symbol: options.symbol,
+            metadataUrl: options.metadataUrl,
+            asciiLogo: options.asciiLogo,
+            logoUrl: options.logoUrl,
+            website: options.website,
+            twitter: options.twitter,
+            telegram: options.telegram,
+        }
+    });
+}
+
+export async function agentSwap(options: {
+    apiUrl: string;
+    apiKey: string;
+    direction: 'buy' | 'sell';
+    mintAddress: string;
+    poolAddress: string;
+    amountIn: string;
+    minAmountOut?: string;
+}): Promise<any> {
+    return requestSentry({
+        apiUrl: options.apiUrl,
+        apiKey: options.apiKey,
+        path: '/api/agent/swap',
+        method: 'POST',
+        body: {
+            direction: options.direction,
+            mintAddress: options.mintAddress,
+            poolAddress: options.poolAddress,
+            amountIn: options.amountIn,
+            minAmountOut: options.minAmountOut || '0'
+        }
     });
 }

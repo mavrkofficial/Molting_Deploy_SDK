@@ -184,14 +184,16 @@ export async function registerAgent(options: AgentRegistrationOptions): Promise<
     return response.json() as Promise<AgentRegistrationResponse>;
 }
 
+const SENTRY_API_URL_DEFAULT = 'https://web-production-7d3e.up.railway.app';
+
 export async function registerAgentFromEnv(): Promise<AgentRegistrationResponse> {
-    const apiUrl = process.env.SENTRY_API_URL || '';
+    const apiUrl = process.env.SENTRY_API_URL || SENTRY_API_URL_DEFAULT;
     const agentName = process.env.AGENT_NAME || '';
     const clawkeyApiBase = process.env.CLAWKEY_API_BASE || '';
     const identityPath = process.env.CLAWKEY_IDENTITY_PATH || '';
 
-    if (!apiUrl || !agentName) {
-        throw new Error('Missing env vars: SENTRY_API_URL, AGENT_NAME');
+    if (!agentName) {
+        throw new Error('Missing env var: AGENT_NAME');
     }
 
     return registerAgent({

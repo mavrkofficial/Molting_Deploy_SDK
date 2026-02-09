@@ -305,6 +305,22 @@ export async function withdrawFunds(options: {
 }
 
 // -------------------------
+// Wallet balance
+// -------------------------
+
+export async function getWalletBalance(options: {
+    apiUrl: string;
+    apiKey: string;
+}): Promise<{ success: boolean; data: { balanceLamports: number; balanceSol: number; usdcBalanceUi: number | null; moltingBalanceUi: number | null } }> {
+    return requestSentry({
+        apiUrl: options.apiUrl,
+        apiKey: options.apiKey,
+        path: '/api/agent/wallet/balance',
+        method: 'GET'
+    });
+}
+
+// -------------------------
 // Legacy (still supported)
 // -------------------------
 
